@@ -1,12 +1,33 @@
 import { StyledForm, StyledHeading, StyledLabel } from "./ProductForm.styled";
 import { StyledButton } from "../Button/Button.styled";
+import useSWR from "swr";
+import { useState } from "react";
 
 export default function ProductForm() {
+  const { mutate } = useSWR("/api/products");
+
   async function handleSubmit(event) {
     event.preventDefault();
 
     const formData = new FormData(event.target);
     const productData = Object.fromEntries(formData);
+
+    try {
+      const response = await fetch("/api/products", {
+        method: "POST",
+        body: JSON.stringify(productData),
+        headers: { "Content-Type": "application/json" },
+      });
+      if (response.ok) {
+        mutate();
+      } else {
+        throw new Error(`Error: &{response.status}`);
+      }
+    } catch (error) {
+      console.log("error");
+    } finally {
+      event.target.reset();
+    }
   }
 
   return (
